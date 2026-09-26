@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>crow.code — a terminal-first AI dev agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    box-sizing:border-box;
+    --bg:#09090c; --surface:#121218; --surface2:#191922; --line:#26262f;
+    --text:#edebf0; --muted:#8d8b99; --muted2:#5f5d6b;
+    --violet:#7c6cf0; --teal:#21d6c4;
+    padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:inherit; margin:0; padding:0;}
+  html{scroll-padding-top:env(safe-area-inset-top,0px);}
+  html,body{height:100%;}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:'Inter',sans-serif; line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{font-family:'Sora',sans-serif; letter-spacing:-0.01em;}
+  code,.mono{font-family:'JetBrains Mono',monospace;}
+  a{color:inherit;}
+  .wrap{max-width:960px; margin:0 auto; padding:0 24px;}
+
+  nav{padding:28px 0;}
+  nav .wrap{display:flex; align-items:center; justify-content:space-between;}
+  .brand{font-family:'Sora',sans-serif; font-weight:700; font-size:1.05rem; display:flex; align-items:center; gap:.5em;}
+  .brand-dot{width:8px; height:8px; border-radius:50%; background:linear-gradient(135deg,var(--violet),var(--teal)); flex:none;}
+  .tag{color:var(--muted); font-size:.9rem;}
+
+  header.hero{padding:64px 0 88px;}
+  .hero-grid{display:grid; grid-template-columns:1.1fr 1fr; gap:56px; align-items:center;}
+  @media (max-width:860px){ .hero-grid{grid-template-columns:1fr;} }
+  .hero h1{font-size:clamp(2.1rem,4.6vw,3.1rem); font-weight:700; line-height:1.12;}
+  .hero p.sub{margin-top:20px; color:var(--muted); font-size:1.08rem; max-width:46ch;}
+  .hero .meta{margin-top:28px; color:var(--muted2); font-size:.88rem;}
+
+  .term{
+    background:var(--surface); border:1px solid var(--line); border-radius:10px;
+    overflow:hidden; box-shadow:0 30px 80px -30px rgba(124,108,240,.25);
+  }
+  .term-bar{display:flex; gap:6px; padding:12px 14px; border-bottom:1px solid var(--line); background:var(--surface2);}
+  .term-bar span{width:9px; height:9px; border-radius:50%; background:#333;}
+  .term-body{padding:20px 18px; font-family:'JetBrains Mono',monospace; font-size:.82rem; color:#c9c7d4;}
+  .term-body .ln{margin-bottom:9px; white-space:pre-wrap;}
+  .term-body .p{color:var(--teal);}
+  .term-body .cmt{color:var(--muted2);}
+  .term-body .gl{background:linear-gradient(90deg,var(--violet),var(--teal)); -webkit-background-clip:text; background-clip:text; color:transparent;}
+
+  section{padding:56px 0;}
+  section + section{border-top:1px solid var(--line);}
+  .intro{max-width:60ch;}
+  .intro h2{font-size:1.6rem; font-weight:700;}
+  .intro p{color:var(--muted); margin-top:12px;}
+
+  .grid{display:grid; grid-template-columns:repeat(2,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:12px; overflow:hidden; margin-top:32px;}
+  @media (max-width:700px){ .grid{grid-template-columns:1fr;} }
+  .card{background:var(--surface); padding:26px 26px;}
+  .card h3{font-size:1.02rem; font-weight:600;}
+  .card p{color:var(--muted); font-size:.92rem; margin-top:8px;}
+
+  .cmdlist{margin-top:32px; border:1px solid var(--line); border-radius:12px; background:var(--surface); overflow:hidden;}
+  .cmdrow{display:flex; gap:22px; padding:16px 22px; align-items:baseline;}
+  .cmdrow + .cmdrow{border-top:1px solid var(--line);}
+  .cmdrow .cmd{font-family:'JetBrains Mono',monospace; color:var(--teal); font-size:.9rem; flex:0 0 150px;}
+  .cmdrow .desc{color:var(--muted); font-size:.92rem;}
+  @media (max-width:600px){ .cmdrow{flex-direction:column; gap:4px;} .cmdrow .cmd{flex:none;} }
+
+  .stack{margin-top:28px; display:flex; flex-wrap:wrap; gap:10px;}
+  .pill{font-family:'JetBrains Mono',monospace; font-size:.8rem; color:var(--muted); border:1px solid var(--line); padding:6px 12px; border-radius:20px;}
+
+  footer{padding:48px 0 64px; color:var(--muted2); font-size:.85rem;}
+  footer .wrap{display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px;}
+
+  @media (prefers-reduced-motion: no-preference){
+    .term{animation:rise .7s ease-out both;}
+  }
+  @keyframes rise{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="brand"><span class="brand-dot"></span>crow.code</div>
+    <div class="tag">a terminal-first AI dev agent</div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <h1>One terminal. Every model. A whole dev environment underneath.</h1>
+      <p class="sub">crow.code is a Python coding agent that lives in your terminal — it reads and edits files, runs your shell, drives git, and can hand different parts of the same project to different AI models at once.</p>
+      <div class="meta">Runs locally · Python · works with Claude, OpenAI, Grok, OpenRouter, or a custom endpoint</div>
+    </div>
+    <div class="term" aria-hidden="true">
+      <div class="term-bar"><span></span><span></span><span></span></div>
+      <div class="term-body">
+        <div class="ln"><span class="p">›</span> crow /plan <span class="cmt">refactor the auth module</span></div>
+        <div class="ln"><span class="gl">planning across 3 files…</span></div>
+        <div class="ln"><span class="p">›</span> crow /gi <span class="cmt">review this before I ship it</span></div>
+        <div class="ln"><span class="p">›</span> crow /hackit <span class="cmt">audit for security issues</span></div>
+        <div class="ln"><span class="p">›</span> crow /undo</div>
+        <div class="ln"><span class="cmt">session restored — nothing lost</span></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <div class="intro">
+      <h2>Talk to every model, not just one</h2>
+      <p>Switch providers mid-conversation without losing context, or split one project across several models at once — each working a different piece in parallel.</p>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <h3>Any provider, one interface</h3>
+        <p>Anthropic, OpenAI, Grok, OpenRouter, or a custom endpoint — plug in the model you want and keep the same workflow.</p>
+      </div>
+      <div class="card">
+        <h3>Model switching, mid-session</h3>
+        <p>Change which model is answering without restarting the conversation. The context carries over.</p>
+      </div>
+      <div class="card">
+        <h3>Parallel multi-AI tasks</h3>
+        <p>Assign different models to different jobs in the same project — one writes code, another writes the docs, another reorganizes the folder structure.</p>
+      </div>
+      <div class="card">
+        <h3>Image input</h3>
+        <p>Hand the agent a screenshot or diagram and let it reason about what it sees, not just what you typed.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="intro">
+      <h2>A full dev environment, not a chat box</h2>
+      <p>crow.code doesn't just suggest changes — it can make them, test them, and ship them.</p>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <h3>File tools</h3>
+        <p>Reads, writes, and navigates your project's files as part of the same conversation.</p>
+      </div>
+      <div class="card">
+        <h3>Shell execution</h3>
+        <p>Runs real commands in your terminal — no copy-pasting suggested snippets by hand.</p>
+      </div>
+      <div class="card">
+        <h3>Git integration</h3>
+        <p>Works with your repo directly — diffs, commits, and history are part of its context.</p>
+      </div>
+      <div class="card">
+        <h3>Automatic test execution</h3>
+        <p>Runs your test suite after changes, so you find out immediately if something broke.</p>
+      </div>
+      <div class="card">
+        <h3>Skills system</h3>
+        <p>Teach it repeatable playbooks for the tasks you do often, so it doesn't relearn them every time.</p>
+      </div>
+      <div class="card">
+        <h3>Gmail sending</h3>
+        <p>Can send email directly — handy for reports, notifications, or handoffs at the end of a task.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="intro">
+      <h2>Commands that do the heavy lifting</h2>
+      <p>A set of slash commands cover the moments a normal coding session actually needs.</p>
+    </div>
+    <div class="cmdlist">
+      <div class="cmdrow"><div class="cmd">/plan</div><div class="desc">Lay out an approach before touching any code.</div></div>
+      <div class="cmdrow"><div class="cmd">/diff</div><div class="desc">See exactly what changed, in context.</div></div>
+      <div class="cmdrow"><div class="cmd">/undo</div><div class="desc">Roll back the last change, cleanly.</div></div>
+      <div class="cmdrow"><div class="cmd">/bypassy</div><div class="desc">Auto-approve actions when you trust the plan.</div></div>
+      <div class="cmdrow"><div class="cmd">/hackit</div><div class="desc">Run a security audit on the current code.</div></div>
+      <div class="cmdrow"><div class="cmd">/ultramode</div><div class="desc">Give the agent broader control of the local machine.</div></div>
+      <div class="cmdrow"><div class="cmd">/gi</div><div class="desc">Get a multi-persona review — several points of view on the same code.</div></div>
+    </div>
+    <div class="stack">
+      <span class="pill">Higgsfield image / video generation</span>
+      <span class="pill">Usage &amp; cost tracking</span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="intro">
+      <h2>Sessions that remember</h2>
+      <p>Work doesn't reset every time you close the terminal.</p>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <h3>Persistent memory</h3>
+        <p>The agent keeps context and personalization across sessions, so it doesn't start from zero each time.</p>
+      </div>
+      <div class="card">
+        <h3>Saved, reloadable sessions</h3>
+        <p>Pick up exactly where you left off — no need to re-explain the project.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>crow.code — a terminal-first, multi-model coding agent.</div>
+    <div class="mono">built in Python</div>
+  </div>
+</footer>
+
+</body>
+</html>
